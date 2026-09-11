@@ -194,8 +194,12 @@ export default function Workspace() {
     (s) => s.launch_batch <= scenario.design.launch_stage,
   ).length;
   const route = sim.steps[client]?.[index]?.path ?? [];
-  // Эталон сравним только с тем же составом наземных пунктов.
-  const comparableReferences = references.filter((r) => sameGroundSites(r.scenario, scenario));
+  // Эталон сравним только с тем же составом наземных пунктов; совпадающий с
+  // текущим сценарием эталон прячем, иначе вариант сравнивался бы сам с собой.
+  const currentKey = JSON.stringify(scenario);
+  const comparableReferences = references.filter(
+    (r) => sameGroundSites(r.scenario, scenario) && JSON.stringify(r.scenario) !== currentKey,
+  );
 
   const map = (
     <MapView
