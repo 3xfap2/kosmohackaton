@@ -1,0 +1,54 @@
+[
+  {
+    "scenario": "01_full_constellation",
+    "times": [
+      0,
+      120,
+      3600,
+      21599,
+      21600,
+      43200,
+      86280
+    ],
+    "total_edges": 573
+  },
+  {
+    "scenario": "02_first_launch",
+    "times": [
+      0,
+      120,
+      3600,
+      21599,
+      21600,
+      43200,
+      86280
+    ],
+    "total_edges": 126
+  },
+  {
+    "scenario": "03_satellite_outages",
+    "times": [
+      0,
+      120,
+      3600,
+      21599,
+      21600,
+      43200,
+      86280
+    ],
+    "total_edges": 501
+  },
+  {
+    "scenario": "04_link_range",
+    "times": [
+      0,
+      120,
+      3600,
+      21599,
+      21600,
+      43200,
+      86280
+    ],
+    "total_edges": 145
+  }
+]
