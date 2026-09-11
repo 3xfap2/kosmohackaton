@@ -1,5 +1,6 @@
 /** Вкладка «Сравнение»: варианты, рекомендация и подбор ориентации плоскостей. */
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { simulate } from '../../core/simulate';
 import {
   applyPattern,
@@ -10,7 +11,7 @@ import {
   type Candidate,
   type SweepResult,
 } from '../../core/analysis';
-import { diffScenarios, type Variant } from '../../core/variants';
+import { diffScenarios, isReference, type Variant } from '../../core/variants';
 import { formatDuration, num, pct } from './format';
 import type { SimulationResult } from '../../core/simulate';
 import type { Scenario } from '../../core/types';
@@ -18,7 +19,10 @@ import type { Scenario } from '../../core/types';
 interface Props {
   scenario: Scenario;
   sim: SimulationResult;
+  /** Эталонные варианты кейса и сохранённые пользователем. */
   variants: Variant[];
+  /** Сохранять свои варианты можно только с профилем. */
+  canSave: boolean;
   onSave: (name: string) => void;
   onOpen: (variant: Variant) => void;
   onRemove: (id: string) => void;
@@ -82,6 +86,7 @@ export default function CompareTab(p: Props) {
   const clients = p.sim.metrics.map((m) => m.client_id);
   const variantById = new Map(p.variants.map((v) => [v.id, v]));
   const rows = rec ? rec.ranking.map((r) => r.candidate) : candidates;
+  const hasReferences = p.variants.some((v) => isReference(v.id));
 
   const runSweep = async () => {
     const key = conditionsKey(p.scenario);
@@ -105,26 +110,40 @@ export default function CompareTab(p: Props) {
   return (
     <>
       <h4 className="sect mono">Сохранить вариант</h4>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <input
-          placeholder="Название варианта"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <button
-          className="btn btn-sm"
-          onClick={() => {
-            p.onSave(name);
-            setName('');
-          }}
-        >
-          Сохранить
-        </button>
-      </div>
-      <div className="note" style={{ marginTop: 8 }}>
-        Сохраняется весь сценарий: этап, плоскости, отказы. Варианты считаются на одной сетке
-        времени и по одним правилам.
-      </div>
+      {p.canSave ? (
+        <>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              placeholder="Название варианта"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <button
+              className="btn btn-sm"
+              onClick={() => {
+                p.onSave(name);
+                setName('');
+              }}
+            >
+              Сохранить
+            </button>
+          </div>
+          <div className="note" style={{ marginTop: 8 }}>
+            Сохраняется весь сценарий: этап, плоскости, отказы. Варианты считаются на одной сетке
+            времени и по одним правилам.
+          </div>
+        </>
+      ) : (
+        <div className="note">
+          Свои варианты сохраняются в профиле. Он локальный: создаётся мгновенно, без
+          подтверждения почты и без отправки данных куда-либо.
+          <div style={{ marginTop: 10 }}>
+            <Link className="btn btn-sm" to="/auth">
+              Войти или создать профиль
+            </Link>
+          </div>
+        </div>
+      )}
 
       {rec ? (
         <div className="rec" data-testid="recommendation">
@@ -220,13 +239,15 @@ export default function CompareTab(p: Props) {
                           <button className="btn btn-bare btn-sm" onClick={() => p.onOpen(variant)}>
                             Открыть
                           </button>
-                          <button
-                            className="btn btn-bare btn-sm"
-                            title="Удалить вариант"
-                            onClick={() => p.onRemove(variant.id)}
-                          >
-                            ✕
-                          </button>
+                          {!isReference(variant.id) && (
+                            <button
+                              className="btn btn-bare btn-sm"
+                              title="Удалить вариант"
+                              onClick={() => p.onRemove(variant.id)}
+                            >
+                              ✕
+                            </button>
+                          )}
                         </>
                       )}
                     </td>
@@ -244,6 +265,13 @@ export default function CompareTab(p: Props) {
           </tbody>
         </table>
       </div>
+      {hasReferences && (
+        <div className="note" style={{ marginTop: 8 }}>
+          Эталонные варианты — три обязательных расчёта из ТЗ: полная группировка, первая очередь
+          и сценарий отказов. Доступны без входа и показываются, когда состав наземных пунктов
+          совпадает с текущим сценарием.
+        </div>
+      )}
 
       <h4 className="sect mono">Подбор ориентации плоскостей</h4>
       <div className="note">

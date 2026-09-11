@@ -15,9 +15,23 @@ import { simulate } from '../core/simulate';
 import { snapshot } from '../core/geometry';
 import { parseScenarioText } from '../core/validate';
 import { buildResult, exportFileName } from '../core/export';
-import { listVariants, removeVariant, saveVariant, type Variant } from '../core/variants';
+import {
+  listVariants,
+  makeReference,
+  removeVariant,
+  sameGroundSites,
+  saveVariant,
+  type Variant,
+} from '../core/variants';
 import { useAuth } from '../auth/AuthContext';
 import type { Failure, Scenario } from '../core/types';
+
+/** Три обязательных расчёта из ТЗ: их сравнение доступно без входа. */
+const REFERENCES = [
+  { file: '01_full_constellation', name: 'Эталон · полная группировка' },
+  { file: '02_first_launch', name: 'Эталон · первая очередь' },
+  { file: '03_satellite_outages', name: 'Эталон · отказ 10 аппаратов' },
+];
 
 const TABS: Array<[Tab, string]> = [
   ['network', 'Сеть'],
@@ -43,6 +57,7 @@ export default function Workspace() {
   const [globeFailed, setGlobeFailed] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [variants, setVariants] = useState<Variant[]>([]);
+  const [references, setReferences] = useState<Variant[]>([]);
   const [dragOver, setDragOver] = useState(false);
 
   const adopt = useCallback((s: Scenario, src: Source) => {
@@ -85,7 +100,26 @@ export default function Workspace() {
     void loadPreset(PRESETS[0].file);
   }, [loadPreset]);
 
-  useEffect(() => setVariants(listVariants(owner)), [owner]);
+  // Свои варианты живут в профиле; без входа их нет.
+  useEffect(() => setVariants(profile ? listVariants(owner) : []), [owner, profile]);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all(
+      REFERENCES.map(async (r) => {
+        const response = await fetch(`${import.meta.env.BASE_URL}scenarios/${r.file}.json`);
+        const parsed = parseScenarioText(await response.text());
+        return parsed.ok ? makeReference(r.file, r.name, parsed.scenario) : null;
+      }),
+    )
+      .then((list) => {
+        if (!cancelled) setReferences(list.filter((x): x is Variant => x !== null));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const sim = useMemo(() => (scenario ? simulate(scenario) : null), [scenario]);
   const index = sim ? Math.min(cursor, sim.times.length - 1) : 0;
@@ -160,6 +194,8 @@ export default function Workspace() {
     (s) => s.launch_batch <= scenario.design.launch_stage,
   ).length;
   const route = sim.steps[client]?.[index]?.path ?? [];
+  // Эталон сравним только с тем же составом наземных пунктов.
+  const comparableReferences = references.filter((r) => sameGroundSites(r.scenario, scenario));
 
   const map = (
     <MapView
@@ -300,7 +336,8 @@ export default function Workspace() {
             <CompareTab
               scenario={scenario}
               sim={sim}
-              variants={variants}
+              variants={[...comparableReferences, ...variants]}
+              canSave={Boolean(profile)}
               onSave={(name) => setVariants(saveVariant(owner, name, scenario, sim.metrics))}
               onOpen={openVariant}
               onRemove={(id) => setVariants(removeVariant(owner, id))}

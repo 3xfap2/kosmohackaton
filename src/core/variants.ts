@@ -73,3 +73,34 @@ export function diffScenarios(a: Scenario, b: Scenario): string[] {
   }
   return out;
 }
+
+/**
+ * Эталонные варианты кейса — три обязательных расчёта из ТЗ. Они не хранятся в
+ * профиле и доступны без входа: эксперт должен видеть сравнение сразу.
+ */
+export const REFERENCE_PREFIX = 'ref:';
+
+export const isReference = (id: string): boolean => id.startsWith(REFERENCE_PREFIX);
+
+export function makeReference(file: string, name: string, scenario: Scenario): Variant {
+  return {
+    id: `${REFERENCE_PREFIX}${file}`,
+    name,
+    created_at: '',
+    scenario,
+    metrics: [],
+  };
+}
+
+/**
+ * Сравнивать имеет смысл только сценарии с одинаковым составом наземных пунктов:
+ * иначе показатели относятся к разным точкам и таблица вводит в заблуждение.
+ */
+export function sameGroundSites(a: Scenario, b: Scenario): boolean {
+  const signature = (s: Scenario): string =>
+    s.ground_sites
+      .map((g) => `${g.id}:${g.role}:${g.lat_deg}:${g.lon_deg}`)
+      .sort()
+      .join('|');
+  return signature(a) === signature(b);
+}

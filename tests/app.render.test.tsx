@@ -49,6 +49,16 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
+/** Локальный профиль: сохранение своих вариантов доступно только после входа. */
+const signIn = () => {
+  const id = 'test-user';
+  localStorage.setItem(
+    'cosmo.accounts',
+    JSON.stringify([{ id, name: 'Инженер Тест', email: 'engineer@example.ru', passwordHash: 'x' }]),
+  );
+  localStorage.setItem('cosmo.session', id);
+};
+
 const summary = (): string => screen.queryByTestId('target-summary')?.textContent ?? '';
 const openTab = (name: string) => fireEvent.click(screen.getByRole('tab', { name }));
 const routeBox = (): HTMLElement => document.querySelector('.route-box') as HTMLElement;
@@ -105,6 +115,7 @@ describe('рабочее место — базовые сценарии пров
   });
 
   it('изменение проекта: вариант сохраняется, сравнивается и попадает в рекомендацию', async () => {
+    signIn();
     await renderWorkspace();
     openTab('Сравнение');
     fireEvent.change(screen.getByPlaceholderText('Название варианта'), {
@@ -119,7 +130,20 @@ describe('рабочее место — базовые сценарии пров
     const table = await screen.findByTestId('compare-table');
     expect(within(table).getByText('Полная')).toBeTruthy();
     expect(within(table).getByText('Текущая конфигурация')).toBeTruthy();
-    expect(within(table).getByText(/P2 RAAN/)).toBeTruthy();
+    expect(within(table).getAllByText(/P2 RAAN/).length).toBeGreaterThan(0);
+    expect(screen.getByTestId('recommendation').textContent).toContain('Рекомендация');
+  });
+
+  it('без входа сохранение закрыто, но эталонное сравнение и рекомендация доступны', async () => {
+    await renderWorkspace();
+    openTab('Сравнение');
+
+    expect(screen.queryByPlaceholderText('Название варианта')).toBeNull();
+    expect(screen.getByText('Войти или создать профиль')).toBeTruthy();
+
+    const table = await screen.findByTestId('compare-table');
+    expect(within(table).getByText('Эталон · первая очередь')).toBeTruthy();
+    expect(within(table).getByText('Эталон · отказ 10 аппаратов')).toBeTruthy();
     expect(screen.getByTestId('recommendation').textContent).toContain('Рекомендация');
   });
 
