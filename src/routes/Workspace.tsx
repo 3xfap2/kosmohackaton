@@ -9,6 +9,7 @@ import ConfigTab from '../components/workspace/ConfigTab';
 import CompareTab from '../components/workspace/CompareTab';
 import ResilienceTab from '../components/workspace/ResilienceTab';
 import TimelineBar from '../components/workspace/TimelineBar';
+import DiagnosisPanel from '../components/workspace/DiagnosisPanel';
 import { PRESETS, type Source, type Tab, type ViewMode } from '../components/workspace/model';
 import { downloadJson, pct, readFileText } from '../components/workspace/format';
 import { simulate } from '../core/simulate';
@@ -59,6 +60,7 @@ export default function Workspace() {
   const [variants, setVariants] = useState<Variant[]>([]);
   const [references, setReferences] = useState<Variant[]>([]);
   const [dragOver, setDragOver] = useState(false);
+  const [showDiagnosis, setShowDiagnosis] = useState(false);
 
   const adopt = useCallback((s: Scenario, src: Source) => {
     setScenario(s);
@@ -240,6 +242,7 @@ export default function Workspace() {
         onReset={reset}
         onExportScenario={() => downloadJson(exportFileName(scenario, '_edited'), scenario)}
         onExportResult={() => downloadJson(exportFileName(scenario, '_result'), buildResult(sim))}
+        onDiagnose={() => setShowDiagnosis(true)}
         view={view}
         onView={setView}
         globeFailed={globeFailed}
@@ -371,6 +374,10 @@ export default function Workspace() {
         playing={playing}
         onPlaying={setPlaying}
       />
+
+      {showDiagnosis && (
+        <DiagnosisPanel scenario={scenario} sim={sim} onClose={() => setShowDiagnosis(false)} />
+      )}
 
       {dragOver && <div className="drop-overlay mono">Отпустите файл сценария</div>}
     </div>

@@ -224,6 +224,15 @@ describe('рабочее место — базовые сценарии пров
     await waitFor(() => expect(routeBox().textContent).toContain('Маршрута нет'));
   });
 
+  it('«Диагноз» открывает заключение и запускает расчёт', async () => {
+    await renderWorkspace();
+    fireEvent.click(screen.getByText('Диагноз'));
+
+    const panel = await screen.findByTestId('diagnosis');
+    expect(panel.textContent).toContain('Диагноз проекта');
+    expect(panel.textContent).toMatch(/Считаю|Целевой уровень/);
+  });
+
   it('вкладка устойчивости показывает общую зависимость от шлюза', async () => {
     await renderWorkspace();
     openTab('Устойчивость');

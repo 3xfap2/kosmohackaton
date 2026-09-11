@@ -10,6 +10,7 @@ interface Props {
   onReset: () => void;
   onExportScenario: () => void;
   onExportResult: () => void;
+  onDiagnose: () => void;
   view: ViewMode;
   onView: (view: ViewMode) => void;
   globeFailed: boolean;
@@ -86,6 +87,14 @@ export default function ScenarioBar(p: Props) {
       <span className="mono" data-testid="target-summary">
         {p.target}
       </span>
+
+      <button
+        className="btn btn-sm btn-primary"
+        onClick={p.onDiagnose}
+        title="Свести все расчёты в письменное заключение по проекту"
+      >
+        Диагноз
+      </button>
 
       <div className="export-group">
         <button
