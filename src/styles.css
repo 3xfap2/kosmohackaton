@@ -235,7 +235,8 @@ h3.heading-sm {
   grid-template-columns: minmax(0, 1fr) minmax(0, 520px);
   gap: 56px;
   align-items: center;
-  padding: 80px 0;
+  /* Только по вертикали: боковые поля задаёт .wrap, иначе на телефоне текст у края. */
+  padding-block: 80px;
 }
 .hero-globe { height: 460px; position: relative; }
 .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 56px; }
@@ -420,9 +421,17 @@ table.data tbody tr.sel td:first-child { color: var(--signal); }
 @media (max-width: 1080px) {
   .hero-inner { grid-template-columns: 1fr; gap: 40px; }
   .hero-globe { height: 340px; order: -1; }
+  /* Узкий экран: одна колонка и прокрутка всей страницы. Без фиксированной высоты
+     строка 1fr схлопывалась, и глобус получал 0 px. Сетка растворяется, чтобы
+     таймлайн встал сразу под глобусом, которым управляет, а вкладки — ниже. */
   .workspace { height: auto; min-height: calc(100vh - 64px); }
-  .ws-main { grid-template-columns: 1fr; }
-  .ws-side { border-left: none; border-top: 1px solid var(--carbon); max-height: 46vh; }
+  .ws-main { display: contents; }
+  .ws-view { order: 1; }
+  .ws-view .globe { height: clamp(300px, 80vw, 560px); }
+  .ws-view .view-hint { position: static; padding: 8px 16px; }
+  .ws-bottom { order: 2; }
+  .ws-side { order: 3; border-left: none; border-top: 1px solid var(--carbon); overflow: visible; }
+  .ws-side .tabs { top: 64px; }
   .tiles { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 780px) {
@@ -430,6 +439,11 @@ table.data tbody tr.sel td:first-child { color: var(--signal); }
   .grid.c3, .grid.c2 { grid-template-columns: 1fr; gap: 0; }
   .nav-links { display: none; }
   .nav { gap: 16px; }
+  /* Ползунок — отдельной строкой во всю ширину, кнопки под ним: иначе строка
+     таймлайна шире экрана и вся страница прокручивается вбок. */
+  .timeline { flex-wrap: wrap; gap: 8px; }
+  .timeline input[type='range'] { order: -1; flex: 1 1 100%; }
+  .clock { min-width: 0; flex: 1 1 100%; }
 }
 
 /* ============================================================
