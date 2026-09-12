@@ -142,7 +142,8 @@ describe('рабочее место — базовые сценарии пров
     expect(screen.getByText('Войти или создать профиль')).toBeTruthy();
 
     const table = await screen.findByTestId('compare-table');
-    expect(within(table).getByText('Эталон · первая очередь')).toBeTruthy();
+    expect(within(table).getByText('Эталон · одна очередь, 16 аппаратов')).toBeTruthy();
+    expect(within(table).getByText('Эталон · две очереди, 32 аппарата')).toBeTruthy();
     expect(within(table).getByText('Эталон · отказ 10 аппаратов')).toBeTruthy();
     expect(screen.getByTestId('recommendation').textContent).toContain('Рекомендация');
   });

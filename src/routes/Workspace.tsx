@@ -29,8 +29,8 @@ import type { Failure, Scenario } from '../core/types';
 
 /** Три обязательных расчёта из ТЗ: их сравнение доступно без входа. */
 const REFERENCES = [
-  { file: '01_full_constellation', name: 'Эталон · полная группировка' },
-  { file: '02_first_launch', name: 'Эталон · первая очередь' },
+  { file: '01_full_constellation', name: 'Эталон · три очереди, 48 аппаратов' },
+  { file: '02_first_launch', name: 'Эталон · одна очередь, 16 аппаратов' },
   { file: '03_satellite_outages', name: 'Эталон · отказ 10 аппаратов' },
 ];
 
@@ -115,7 +115,17 @@ export default function Workspace() {
       }),
     )
       .then((list) => {
-        if (!cancelled) setReferences(list.filter((x): x is Variant => x !== null));
+        const found = list.filter((x): x is Variant => x !== null);
+        // Промежуточный этап отдельным файлом не задан — выводим его из полной
+        // группировки, чтобы сравнение покрывало все три очереди: 16, 32 и 48.
+        const full = found.find((v) => v.id.endsWith('01_full_constellation'));
+        if (full) {
+          found.splice(1, 0, makeReference('stage2', 'Эталон · две очереди, 32 аппарата', {
+            ...full.scenario,
+            design: { ...full.scenario.design, launch_stage: 2 },
+          }));
+        }
+        if (!cancelled) setReferences(found);
       })
       .catch(() => undefined);
     return () => {
