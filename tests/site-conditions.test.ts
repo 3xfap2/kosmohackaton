@@ -14,10 +14,10 @@ import { validateScenario } from '../src/core/validate';
 import { conditionsDiffer } from '../src/core/analysis';
 import type { Scenario } from '../src/core/types';
 
-const CASE_ROOT = join(__dirname, '..', '..');
+const SCENARIOS = join(__dirname, '..', 'public', 'scenarios');
 const NAMES = ['01_full_constellation', '02_first_launch', '03_satellite_outages', '04_link_range'];
 const load = (name: string): Scenario =>
-  JSON.parse(readFileSync(join(CASE_ROOT, 'Данные', `${name}.json`), 'utf-8')) as Scenario;
+  JSON.parse(readFileSync(join(SCENARIOS, `${name}.json`), 'utf-8')) as Scenario;
 
 describe('недоступность шлюза', () => {
   it.each(NAMES)('в сценарии %s эта причина не встречается — её нечем показать', (name) => {

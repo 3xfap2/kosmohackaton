@@ -7,9 +7,9 @@ import { simulate } from '../src/core/simulate';
 import { parseScenarioText } from '../src/core/validate';
 import type { Scenario } from '../src/core/types';
 
-const CASE_ROOT = join(__dirname, '..', '..');
+const SCENARIOS = join(__dirname, '..', 'public', 'scenarios');
 const load = (name: string): Scenario =>
-  JSON.parse(readFileSync(join(CASE_ROOT, 'Данные', `${name}.json`), 'utf-8')) as Scenario;
+  JSON.parse(readFileSync(join(SCENARIOS, `${name}.json`), 'utf-8')) as Scenario;
 
 describe('выгрузка результата', () => {
   const sim = simulate(load('03_satellite_outages'));

@@ -11,9 +11,9 @@ import { parseScenarioText, validateScenario } from '../src/core/validate';
 import { buildResult } from '../src/core/export';
 import { simulate } from '../src/core/simulate';
 
-const CASE_ROOT = join(__dirname, '..', '..');
+const SCENARIOS = join(__dirname, '..', 'public', 'scenarios');
 const NAMES = ['01_full_constellation', '02_first_launch', '03_satellite_outages', '04_link_range'];
-const text = (name: string): string => readFileSync(join(CASE_ROOT, 'Данные', `${name}.json`), 'utf-8');
+const text = (name: string): string => readFileSync(join(SCENARIOS, `${name}.json`), 'utf-8');
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Raw = any;
 const base = (): Raw => JSON.parse(text('01_full_constellation'));

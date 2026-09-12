@@ -6,9 +6,9 @@ import { diagnose } from '../src/core/diagnose';
 import { simulate } from '../src/core/simulate';
 import type { Scenario } from '../src/core/types';
 
-const CASE_ROOT = join(__dirname, '..', '..');
+const SCENARIOS = join(__dirname, '..', 'public', 'scenarios');
 const load = (name: string): Scenario =>
-  JSON.parse(readFileSync(join(CASE_ROOT, 'Данные', `${name}.json`), 'utf-8')) as Scenario;
+  JSON.parse(readFileSync(join(SCENARIOS, `${name}.json`), 'utf-8')) as Scenario;
 
 // Мелкая сетка перебора: содержание выводов от её размера не зависит.
 const GRID = { spacings: [50, 60], phases: [0, 7.5] };

@@ -17,7 +17,7 @@ def main() -> None:
     out = APP / 'tests' / 'fixtures'
     index = []
     for name in SCENARIOS:
-        scenario = geometry.load(CASE / 'Данные' / f'{name}.json')
+        scenario = geometry.load(APP / 'public' / 'scenarios' / f'{name}.json')
         snaps = {}
         for t in TIMES:
             snap = geometry.snapshot(scenario, t)

@@ -5,9 +5,9 @@ import { describe, expect, it } from 'vitest';
 import { simulate } from '../src/core/simulate';
 import type { Scenario } from '../src/core/types';
 
-const CASE_ROOT = join(__dirname, '..', '..');
+const SCENARIOS = join(__dirname, '..', 'public', 'scenarios');
 const load = (name: string): Scenario =>
-  JSON.parse(readFileSync(join(CASE_ROOT, 'Данные', `${name}.json`), 'utf-8')) as Scenario;
+  JSON.parse(readFileSync(join(SCENARIOS, `${name}.json`), 'utf-8')) as Scenario;
 
 const share = (steps: { t_s: number; path: string[] }[], from: number, to: number): number => {
   const slice = steps.filter((s) => s.t_s >= from && s.t_s < to);

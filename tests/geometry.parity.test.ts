@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
 import { snapshot } from '../src/core/geometry';
 import type { Scenario, Snapshot, Edge } from '../src/core/types';
 
-const CASE_ROOT = join(__dirname, '..', '..');
+const SCENARIO_DIR = join(__dirname, '..', 'public', 'scenarios');
 const FIXTURES = join(__dirname, 'fixtures');
 
 /** Допуск: 1 нм на координатах в километрах и 1e-9° на углах. */
@@ -28,7 +28,7 @@ function readJson<T>(path: string): T {
 }
 
 function loadScenario(name: string): Scenario {
-  return readJson<Scenario>(join(CASE_ROOT, 'Данные', `${name}.json`));
+  return readJson<Scenario>(join(SCENARIO_DIR, `${name}.json`));
 }
 
 function sortEdges(edges: Edge[]): Edge[] {

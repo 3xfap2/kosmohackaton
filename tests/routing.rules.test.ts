@@ -12,10 +12,10 @@ import { describe, expect, it } from 'vitest';
 import { simulate } from '../src/core/simulate';
 import type { Scenario } from '../src/core/types';
 
-const CASE_ROOT = join(__dirname, '..', '..');
+const SCENARIOS = join(__dirname, '..', 'public', 'scenarios');
 const NAMES = ['01_full_constellation', '02_first_launch', '03_satellite_outages', '04_link_range'];
 const load = (name: string): Scenario =>
-  JSON.parse(readFileSync(join(CASE_ROOT, 'Данные', `${name}.json`), 'utf-8')) as Scenario;
+  JSON.parse(readFileSync(join(SCENARIOS, `${name}.json`), 'utf-8')) as Scenario;
 
 describe('наземные пункты не ретранслируют трафик', () => {
   it.each(NAMES)('в сценарии %s промежуточные узлы — только спутники', (name) => {
