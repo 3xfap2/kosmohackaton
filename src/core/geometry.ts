@@ -133,6 +133,8 @@ export function snapshot(scenario: Scenario, t_s: number): Snapshot {
     const uy = gy / R_EARTH_KM;
     const uz = gz / R_EARTH_KM;
     const offline = gatewayOffline(scenario, site.id, t_s);
+    // Локальная маска горизонта площадки; без неё — общий порог сценария.
+    const threshold = site.min_elevation_deg ?? e.min_elevation_deg;
     const perSite: Record<string, number> = {};
 
     for (let k = 0; k < count; k++) {
@@ -143,7 +145,7 @@ export function snapshot(scenario: Scenario, t_s: number): Snapshot {
       const sin = Math.min(Math.max((dx * ux + dy * uy + dz * uz) / dl, -1), 1);
       const el = Math.asin(sin) / DEG;
       if (active[k]) perSite[ids[k]] = el;
-      if (el >= e.min_elevation_deg && active[k] && !offline) edges.push([site.id, ids[k], dl]);
+      if (el >= threshold && active[k] && !offline) edges.push([site.id, ids[k], dl]);
     }
     elevation_deg[site.id] = perSite;
   }

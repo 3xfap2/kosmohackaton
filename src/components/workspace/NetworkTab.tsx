@@ -25,7 +25,8 @@ export default function NetworkTab(p: Props) {
   const t = sim.times[cursor];
   const step = sim.steps[client]?.[cursor];
   const metrics = sim.metrics.find((m) => m.client_id === client);
-  const minElevation = scenario.environment.min_elevation_deg;
+  const site = scenario.ground_sites.find((g) => g.id === client);
+  const minElevation = site?.min_elevation_deg ?? scenario.environment.min_elevation_deg;
   const satIds = new Set(scenario.design.satellites.map((s) => s.id));
   const planeOf = new Map(scenario.design.satellites.map((s) => [s.id, s.plane_id]));
   const onRoute = new Set(step?.path ?? []);

@@ -38,6 +38,13 @@ export interface GroundSite {
   role: GroundRole;
   lat_deg: number;
   lon_deg: number;
+  /**
+   * Локальная маска горизонта, градусы — расширение поверх формата кейса.
+   * Рельеф и застройка вокруг площадки поднимают эффективный порог видимости.
+   * Если поля нет, действует общий порог из environment, и расчёт совпадает
+   * с эталонным geometry.py.
+   */
+  min_elevation_deg?: number;
 }
 
 export interface Failure {

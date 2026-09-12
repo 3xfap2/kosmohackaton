@@ -25,7 +25,7 @@ import {
   type Variant,
 } from '../core/variants';
 import { useAuth } from '../auth/AuthContext';
-import type { Failure, Scenario } from '../core/types';
+import type { Failure, GatewayOutage, Scenario } from '../core/types';
 
 /** Три обязательных расчёта из ТЗ: их сравнение доступно без входа. */
 const REFERENCES = [
@@ -186,6 +186,13 @@ export default function Workspace() {
     setScenario({ ...scenario, failures: [...scenario.failures, f] });
   const removeFailure = (i: number) =>
     setScenario({ ...scenario, failures: scenario.failures.filter((_, k) => k !== i) });
+  const addGatewayOutage = (o: GatewayOutage) =>
+    setScenario({ ...scenario, gateway_outages: [...scenario.gateway_outages, o] });
+  const removeGatewayOutage = (i: number) =>
+    setScenario({
+      ...scenario,
+      gateway_outages: scenario.gateway_outages.filter((_, k) => k !== i),
+    });
   const reset = () => {
     if (!original) return;
     setScenario(structuredClone(original));
@@ -347,6 +354,8 @@ export default function Workspace() {
               onChange={setScenario}
               onAddFailure={addFailure}
               onRemoveFailure={removeFailure}
+              onAddGatewayOutage={addGatewayOutage}
+              onRemoveGatewayOutage={removeGatewayOutage}
             />
           )}
           {tab === 'compare' && (

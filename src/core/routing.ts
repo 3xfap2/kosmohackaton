@@ -95,6 +95,8 @@ export function buildNetwork(scenario: Scenario, t_s: number): NetworkState {
     if (site.role === 'gateway' && gatewayOffline(scenario, site.id, t_s)) {
       offlineGateways.add(site.id);
     }
+    // Локальная маска горизонта площадки; без неё — общий порог сценария.
+    const threshold = site.min_elevation_deg ?? e.min_elevation_deg;
     const visible: number[] = [];
     for (let k = 0; k < count; k++) {
       if (!active[k]) continue;
@@ -103,7 +105,7 @@ export function buildNetwork(scenario: Scenario, t_s: number): NetworkState {
       const dz = xyz[k * 3 + 2] - gz;
       const dl = Math.sqrt(dx * dx + dy * dy + dz * dz);
       const sin = Math.min(Math.max((dx * ux + dy * uy + dz * uz) / dl, -1), 1);
-      if (Math.asin(sin) * (180 / Math.PI) >= e.min_elevation_deg) visible.push(k);
+      if (Math.asin(sin) * (180 / Math.PI) >= threshold) visible.push(k);
     }
     groundLinks.set(site.id, visible);
   }

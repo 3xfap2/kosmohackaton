@@ -180,6 +180,16 @@ export function validateScenario(raw: unknown): string[] {
       if (!isNum(g.lon_deg) || g.lon_deg < -180 || g.lon_deg > 180) {
         err(`${label}.lon_deg`, `долгота от −180 до 180°, в файле ${show(g.lon_deg)}`);
       }
+      // Необязательное расширение: локальная маска горизонта площадки.
+      if (g.min_elevation_deg !== undefined) {
+        const mask = g.min_elevation_deg;
+        if (!isNum(mask) || mask < 0 || mask >= 90) {
+          err(
+            `${label}.min_elevation_deg`,
+            `маска горизонта от 0 включительно до 90 исключительно, в файле ${show(mask)}`,
+          );
+        }
+      }
     });
     if (clientIds.size === 0) err('ground_sites', 'нужен хотя бы один клиентский пункт (role: "client")');
     if (gatewayIds.size === 0) err('ground_sites', 'нужен хотя бы один шлюз (role: "gateway")');

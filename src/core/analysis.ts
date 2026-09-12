@@ -191,6 +191,12 @@ export function conditionsDiffer(scenarios: Scenario[]): string[] {
       .sort()
       .join('|');
   if (new Set(scenarios.map(sites)).size > 1) out.push('состав или координаты наземных пунктов');
+  const masks = (s: Scenario) =>
+    s.ground_sites
+      .map((g) => `${g.id}:${g.min_elevation_deg ?? ''}`)
+      .sort()
+      .join('|');
+  if (new Set(scenarios.map(masks)).size > 1) out.push('локальные маски горизонта пунктов');
   if (new Set(scenarios.map((s) => JSON.stringify(s.failures))).size > 1) {
     out.push('периоды отказов спутников');
   }

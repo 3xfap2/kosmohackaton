@@ -1,7 +1,8 @@
 /** Вкладка «Конфигурация»: очередь запуска, плоскости, отказы, условия расчёта. */
 import FailureForm from './FailureForm';
+import GatewayOutageForm from './GatewayOutageForm';
 import { clock, formatDuration, pct } from './format';
-import type { Failure, Scenario } from '../../core/types';
+import type { Failure, GatewayOutage, Scenario } from '../../core/types';
 
 interface Props {
   scenario: Scenario;
@@ -9,11 +10,30 @@ interface Props {
   onChange: (scenario: Scenario) => void;
   onAddFailure: (failure: Failure) => void;
   onRemoveFailure: (index: number) => void;
+  onAddGatewayOutage: (outage: GatewayOutage) => void;
+  onRemoveGatewayOutage: (index: number) => void;
 }
 
 const norm360 = (a: number): number => ((a % 360) + 360) % 360;
 
-export default function ConfigTab({ scenario, t, onChange, onAddFailure, onRemoveFailure }: Props) {
+/** Типовые площадки: рельеф и застройка поднимают эффективный порог видимости. */
+const HORIZON_MASKS = [
+  { value: '', label: 'как в сценарии' },
+  { value: '5', label: 'открытое поле, 5°' },
+  { value: '10', label: 'холмистая местность, 10°' },
+  { value: '15', label: 'городская застройка, 15°' },
+  { value: '20', label: 'плотная застройка, 20°' },
+];
+
+export default function ConfigTab({
+  scenario,
+  t,
+  onChange,
+  onAddFailure,
+  onRemoveFailure,
+  onAddGatewayOutage,
+  onRemoveGatewayOutage,
+}: Props) {
   const { design, environment: env } = scenario;
 
   const patchPlane = (id: string, field: 'raan_deg' | 'phase_deg', value: number) => {
@@ -24,6 +44,19 @@ export default function ConfigTab({ scenario, t, onChange, onAddFailure, onRemov
         ...design,
         planes: design.planes.map((p) => (p.id === id ? { ...p, [field]: norm360(value) } : p)),
       },
+    });
+  };
+
+  const setSiteMask = (id: string, value: string) => {
+    onChange({
+      ...scenario,
+      ground_sites: scenario.ground_sites.map((g) => {
+        if (g.id !== id) return g;
+        const next = { ...g };
+        if (value === '') delete next.min_elevation_deg;
+        else next.min_elevation_deg = Number(value);
+        return next;
+      }),
     });
   };
 
@@ -49,7 +82,7 @@ export default function ConfigTab({ scenario, t, onChange, onAddFailure, onRemov
       </div>
       <div className="note">
         Состав очередей задан кейсом и не меняется — меняется только то, сколько из них уже
-        выведено.
+        выведено. В этом наборе очередь совпадает с орбитальной плоскостью целиком.
       </div>
 
       <h4 className="sect mono">Орбитальные плоскости</h4>
@@ -107,6 +140,50 @@ export default function ConfigTab({ scenario, t, onChange, onAddFailure, onRemov
         <FailureForm scenario={scenario} defaultStart={t} onAdd={onAddFailure} />
       </div>
 
+      <h4 className="sect mono">Недоступность шлюза</h4>
+      {scenario.gateway_outages.length === 0 ? (
+        <div className="note">
+          Периодов не задано. Пока шлюз доступен, причина разрыва «шлюз недоступен» возникнуть не
+          может — задайте период, чтобы её увидеть.
+        </div>
+      ) : (
+        <div className="list">
+          {scenario.gateway_outages.map((o, index) => (
+            <div className="list-row" key={`${o.gateway_id}-${o.start_s}-${o.end_s}`}>
+              <span className="mono">{o.gateway_id}</span>
+              <span className="note">{`${clock(o.start_s)}–${clock(o.end_s)}`}</span>
+              <button className="btn btn-bare btn-sm" onClick={() => onRemoveGatewayOutage(index)}>
+                Убрать
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <div style={{ marginTop: 12 }}>
+        <GatewayOutageForm scenario={scenario} defaultStart={t} onAdd={onAddGatewayOutage} />
+      </div>
+
+      <h4 className="sect mono">Маска горизонта площадок</h4>
+      <div className="note" style={{ marginBottom: 10 }}>
+        {`Рельеф и застройка вокруг пункта поднимают эффективный порог видимости. Это расширение поверх модели кейса: по умолчанию для всех действует общий порог ${env.min_elevation_deg}°.`}
+      </div>
+      {scenario.ground_sites.map((site) => (
+        <div className="field" key={site.id}>
+          <span>{`${site.id}${site.role === 'gateway' ? ' · шлюз' : ''}`}</span>
+          <select
+            aria-label={`Маска горизонта ${site.id}`}
+            value={String(site.min_elevation_deg ?? '')}
+            onChange={(e) => setSiteMask(site.id, e.target.value)}
+          >
+            {HORIZON_MASKS.map((m) => (
+              <option key={m.value} value={m.value}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      ))}
+
       <h4 className="sect mono">Условия расчёта</h4>
       <dl className="kv">
         <dt>Высота орбиты</dt>
@@ -152,21 +229,6 @@ export default function ConfigTab({ scenario, t, onChange, onAddFailure, onRemov
           ))}
         </tbody>
       </table>
-
-      <h4 className="sect mono">Недоступность шлюзов</h4>
-      {scenario.gateway_outages.length === 0 ? (
-        <div className="note">Периодов не задано.</div>
-      ) : (
-        <div className="list">
-          {scenario.gateway_outages.map((o) => (
-            <div className="list-row" key={`${o.gateway_id}-${o.start_s}`}>
-              <span className="mono">{o.gateway_id}</span>
-              <span className="note">{`${clock(o.start_s)}–${clock(o.end_s)}`}</span>
-              <span />
-            </div>
-          ))}
-        </div>
-      )}
     </>
   );
 }
